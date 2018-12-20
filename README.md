@@ -1,5 +1,9 @@
-# What is script for?
+# Information
 
+**Main repo is on Gitlab** [gready-ws](https://gitlab.com/denys.makeienko/gready-ws)
+
+# What is script for?
+ 
 This script will prepare your workspace for comfortable work.
 ### Packages that will be installed:
 
