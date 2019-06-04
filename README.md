@@ -19,8 +19,8 @@ This script will prepare your workspace for comfortable work.
 * `(Optional)` [Docker](https://docs.docker.com/install/)
 * `(Optional)` [VSCode](https://code.visualstudio.com/) or [Sublime Text 3](https://www.sublimetext.com/)
 
-Also, script will install **zsh** with [oh-my-zsh](https://ohmyz.sh/) and add some usefull aliases. 
-You can disable installing **zsh shell** with option `-s bash`
+Also, script will install **zsh** with [oh-my-zsh](https://ohmyz.sh/).
+You can disable installing **zsh shell** with option `-s bash` or omit this key.
 
 ## Command Line Options
 
@@ -36,12 +36,21 @@ Use **"-s [ zsh | bash ] "**- to choose which shell do you prefer
 
 ## How to
 
-Download script and execute 
+Download script using `curl` (if present) or `wget` and execute.
+
+Download with `curl`
 
 ```
-curl https://gitlab.com/denys.makeienko/gready-ws/raw/master/gready-ws.sh |bash -s -- -[option]
+curl -O https://gitlab.com/denys.makeienko/gready-ws/raw/master/gready-ws.sh
 ```
 
-`OR`
+or with `wget`
 
-download it manualy and run with any option you need
+```
+wget https://gitlab.com/denys.makeienko/gready-ws/raw/master/gready-ws.sh
+```
+
+and run it
+```
+bash gready-ws.sh [-key] [value]
+```

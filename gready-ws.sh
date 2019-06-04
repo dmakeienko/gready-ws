@@ -101,26 +101,14 @@ system_utils_install() {
     sudo apt install -y git htop mc
 }
 
-
-configure_aliases () {
-  SHELL="$1"
-  
-  color_print "Let's add some aliases..."
-    echo "alias dcd=\"docker-compose down\"" >> "$HOME"/"$SHELL"
-    echo "alias dcu=\"docker-compose up\"" >> "$HOME"/"$SHELL"
-    echo "alias dcs=\"docker-compose stop\"" >> "$HOME"/"$SHELL"
-
-    # Simple function, that checks if restart is required after upgrade
-    echo 'function check_restart () { if [ -f "/var/run/restart-required" ]; then echo -e "\\e[41mRestart required"; else echo -e "\\e[42m\\e[30mNo restart required\\e[27m" ; fi }'  >> $SHELL
-    
-    echo "alias update=\"sudo apt update\"" >> "$HOME"/"$SHELL"
-    echo "alias upgrade=\"sudo apt upgrade\" && check_restart" >> "$HOME"/"$SHELL"
-    echo "alias uup=\"update && upgrade\"" >> "$HOME"/"$SHELL"
-
-}
-
 # # Update system
 sudo apt update
+
+common_dependencies
+
+system_utils_install
+
+google-chrome_install
 
 while getopts "e:ds:t:h" opt
 do
@@ -131,8 +119,8 @@ do
     ;;
     d)  docker_install
     ;;
-    s)  if [[ $OPTARG = "zsh" ]]; then configure_zsh && configure_aliases ".zshrc"
-        elif [[ $OPTARG = "bash" ]]; then configure_aliases ".bashrc"
+    s)  if [[ $OPTARG = "zsh" ]]; then configure_zsh
+        elif [[ $OPTARG = "bash" ]]; then echo "No changes in shell, default is: $SHELL"
         fi 
     ;;
     t)  if [[ $OPTARG = "tilix" ]]; then tilix_install
@@ -147,9 +135,3 @@ do
     ;;
   esac
 done
-
-common_dependencies
-
-system_utils_install
-
-google-chrome_install
