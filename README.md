@@ -2,6 +2,16 @@
 
 **Main repo is on Gitlab** [gready-ws](https://gitlab.com/denys.makeienko/gready-ws)
 
+## Platform
+
+Tested on: 
+
+|    Platform      | Tested   |
+|------------------|----------|
+| **Ubuntu 16.04** |    ✓     |
+| **Ubuntu 18.04** |    ✓     |
+| **Ubuntu 19.04** |    ✓     |
+
 # What is script for?
  
 This script will prepare your workspace for comfortable work.

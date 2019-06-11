@@ -77,7 +77,7 @@ tilix_install() {
     if [[ "$LSB_RELEASE" = "16" ]]; then
       sudo add-apt-repository ppa:webupd8team/terminix
       sudo apt update && sudo apt install tilix
-    elif [[ "$LSB_RELEASE" = "18" ]]; then
+    elif [[ "$LSB_RELEASE" = "18"|| "$LSB_RELEASE" = "19" ]]; then
       sudo apt install tilix
     else 
       color_print "Looks like you need something else..."
