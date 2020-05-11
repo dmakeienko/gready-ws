@@ -1,14 +1,21 @@
 #!/usr/bin/env bash
+set -e
+set -u
+set -o pipefail
 
 # Get ubuntu version
 LSB_RELEASE="$(lsb_release -rs | awk -F'.' '{print $1}')"
 
+#Software version
+PACKER_VERSION="1.5.6"
+DOCKER_COMPOSE_VERSION="1.25.5"
 
 help() {
   echo "Available keys:"
-  echo "Use \"-e [ sublime | vscode ]\" to choose editor"
+  echo "Use \"-e\" to install VS Code editor"
   echo "Use \"-d\" to choose whether to install Docker"
-  echo "Use \"-t [ guake | tilix ] \" to choose which terminal do you prefer"
+  echo "Use \"-t\" to install Tilix"
+  echo "Use \"-u\" to install DevOps tools (Terraform, Packer)"
   echo "Use \"-s [ zsh | bash ] \" to choose which shell do you prefer"
 }
 
@@ -29,11 +36,11 @@ docker_install() {
     $(lsb_release -cs) \
     stable"
     sudo apt-get update \
-    && sudo apt-get install docker-ce
+    && sudo apt-get install docker-ce docker-ce-cli containerd.io
 
   color_print "Installing docker-compose ..."
-    sudo curl -L "https://github.com/docker/compose/releases/download/1.23.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose \
-    && sudo chmod +x /usr/local/bin/docker-compose
+    sudo curl -L "https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
 
   color_print "Let's add you to the group \"docker\"..."
     sudo usermod -aG docker `whoami`
@@ -51,25 +58,26 @@ common_dependencies() {
     software-properties-common
 }
 
-sublime_install() {
-  color_print "Installing Sublime Text 3 ..."
-    wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add -
-    echo "deb https://download.sublimetext.com/ apt/stable/" | sudo tee /etc/apt/sources.list.d/sublime-text.list
-    sudo apt update && sudo apt -y install sublime-text
-}
-
 vscode_install() {
-  curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
-    sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
-    sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list'
-    sudo apt update && sudo apt install -y code
+  if code --version; then
+    echo -e "\e[47m\e[36mVS Code is already installed. Skipping installation...\e[0m"
+  else 
+    color_print "Installing VS Code..."
+    wget -O /tmp/vscode.deb https://go.microsoft.com/fwlink/\?LinkID\=760868
+    sudo dpkg -i /tmp/vscode.deb
+    sudo rm /tmp/vscode.deb
+  fi
 }
 
-google-chrome_install() {
-  color_print "Installing chrome ..."
+chrome_install() {
+  if dpkg -l |grep "chrome"; then 
+    echo -e "\e[47m\e[36mChrome is already installed. Skipping installation...\e[0m"
+  else 
+    color_print "Installing chrome ..."
     wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
     sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
     sudo apt update && sudo apt install -y google-chrome-stable
+  fi
 }
 
 tilix_install() {
@@ -80,20 +88,20 @@ tilix_install() {
     elif [[ "$LSB_RELEASE" = "18"|| "$LSB_RELEASE" = "19" ]]; then
       sudo apt install tilix
     else 
-      color_print "Looks like you need something else..."
+      echo -e "\e[47m\e[36mLooks like there is no repo for your Ubuntu distribution... Skipping installation...\e[0m"
     fi
 }
 
-guake_install() {
-  sudo apt install -y guake
-}
-
 configure_zsh () {
-  color_print "Installing zsh ..."
-    sudo apt install -y zsh
+  if ls /usr/bin |grep zsh; then 
+    echo -e "\e[47m\e[36mZSH is already installed. Skipping installation...\e[0m"
+  else
+    color_print "Installing zsh ..."
+      sudo apt install -y zsh
 
-  color_print "Installing oh-my-zsh ..."
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+    color_print "Installing oh-my-zsh ..."
+      sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+  fi
 }
 
 system_utils_install() {
@@ -101,31 +109,52 @@ system_utils_install() {
     sudo apt install -y git htop mc
 }
 
-# # Update system
-sudo apt update
+devops_utils() {
+  #install tfenv
+  if git --version; then
+    [ -d "~/.tfenv" ] && color_print "Installing tfenv..." && \
+      git clone https://github.com/tfutils/tfenv.git ~/.tfenv && \
+      sudo ln -sf ~/.tfenv/bin/* /usr/local/bin
+  else
+    echo -e "\e[41m\e[30mGit not installed! Can't install tfenv!\e[0m"
+    exit 1
+  fi
+  
+  #install Packer 
+  color_print "Installing Packer..."
+  wget -O packer.zip https://releases.hashicorp.com/packer/$PACKER_VERSION/packer_"$PACKER_VERSION"_linux_amd64.zip
+  unzip packer.zip && sudo mv ./packer /usr/local/bin && rm packer.zip
+
+  color_print "Installing AWS CLI v2..."
+  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+    unzip awscliv2.zip && \
+    sudo ./aws/install && \
+    rm awscliv2.zip
+}
+
+## Update system
+sudo apt update && sudo apt upgrade -y
 
 common_dependencies
 
 system_utils_install
 
-google-chrome_install
+chrome_install
 
-while getopts "e:ds:t:h" opt
+while getopts ":edthus:" opt
 do
   case $opt in
-    e)  if [[ $OPTARG = "sublime" ]]; then sublime_install
-        elif [[ $OPTARG = "vscode" ]]; then vscode_install
-        fi
+    e) vscode_install
     ;;
-    d)  docker_install
+    d) docker_install
     ;;
     s)  if [[ $OPTARG = "zsh" ]]; then configure_zsh
         elif [[ $OPTARG = "bash" ]]; then echo "No changes in shell, default is: $SHELL"
         fi 
     ;;
-    t)  if [[ $OPTARG = "tilix" ]]; then tilix_install
-        elif [[ $OPTARG = "guake" ]]; then guake_install
-        fi
+    t) tilix_install
+    ;;
+    u) devops_utils
     ;;
     h) help
     ;;
