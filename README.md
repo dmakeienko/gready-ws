@@ -1,6 +1,6 @@
 # Information
 
-**Main repo is on Gitlab** [gready-ws](https://gitlab.com/denys.makeienko/gready-ws)
+This script will set up your workspace for comfortable work.
 
 ## Platform
 
@@ -14,7 +14,7 @@ Tested on:
 
 # What is script for?
  
-This script will prepare your workspace for comfortable work.
+This script will set up your workspace for comfortable work.
 ### Packages that will be installed:
 
 * **apt-transport-https \
@@ -25,20 +25,23 @@ This script will prepare your workspace for comfortable work.
 
 * **Google Chrome** 
 * **git, htop, mc**
-* `(Optional)` [Tilix](https://gnunn1.github.io/tilix-web/) or [Guake](https://github.com/Guake/guake)
+* `(Optional)` [Tilix](https://gnunn1.github.io/tilix-web/)
 * `(Optional)` [Docker](https://docs.docker.com/install/)
-* `(Optional)` [VSCode](https://code.visualstudio.com/) or [Sublime Text 3](https://www.sublimetext.com/)
+* `(Optional)` [VSCode](https://code.visualstudio.com/)
+* `(Optional)` [Packer](https://www.packer.io/), [tfenv](https://github.com/tfutils/tfenv)
 
 Also, script will install **zsh** with [oh-my-zsh](https://ohmyz.sh/).
 You can disable installing **zsh shell** with option `-s bash` or omit this key.
 
 ## Command Line Options
 
-Use **"-e [ sublime | vscode ]"** to choose editor
+Use **"-e"** to install VS Code
 
 Use **"-d"** - to choose whether to install Docker
 
-Use **"-t [ guake | tilix ] "**- to choose which terminal do you prefer
+Use **"-t"** - to install Tilix
+
+Use **"-u"** - to install devops tools (terraform, packer, AWS CLI v2 etc)
 
 Use **"-s [ zsh | bash ] "**- to choose which shell do you prefer
 
